@@ -11,8 +11,7 @@
     "axios": "^1.6.8",
     "discord.js": "^14.13.0",
     "dotenv": "^16.4.5",
-    "edge-tts": "latest",
-    "gtts": "^2.0.2",
+    "google-tts-api": "^2.0.1",
     "langdetect": "^1.1.2",
     "uuid": "^9.0.1",
     "xregexp": "^5.1.1"
