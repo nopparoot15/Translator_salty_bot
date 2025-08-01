@@ -12,6 +12,7 @@
     "discord.js": "^14.13.0",
     "dotenv": "^16.4.5",
     "google-tts-api": "^2.0.1",
+    "languagedetect": "^1.1.1",
     "uuid": "^9.0.1",
     "xregexp": "^5.1.1"
   },
