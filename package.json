@@ -12,7 +12,7 @@
     "discord.js": "^14.13.0",
     "dotenv": "^16.4.5",
     "edge-tts": "latest",
-    "gtts": "1.0.0",               
+    "@google-cloud/text-to-speech": "^4.3.0",   // ✅ เพิ่ม
     "uuid": "^9.0.1",
     "xregexp": "^5.1.1"
   },
