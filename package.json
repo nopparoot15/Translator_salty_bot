@@ -11,8 +11,7 @@
     "axios": "^1.6.8",
     "discord.js": "^14.13.0",
     "dotenv": "^16.4.5",
-    "edge-tts": "latest",
-    "@google-cloud/text-to-speech": "^4.3.0",   // ✅ เพิ่ม
+    "@google-cloud/text-to-speech": "^4.3.0",
     "uuid": "^9.0.1",
     "xregexp": "^5.1.1"
   },
