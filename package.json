@@ -1,0 +1,23 @@
+{
+  "name": "discord-translate-bot",
+  "version": "1.0.0",
+  "description": "Discord bot with OCR, Translation, and Multi-language TTS",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@discordjs/voice": "^0.17.0",
+    "axios": "^1.6.8",
+    "discord.js": "^14.13.0",
+    "dotenv": "^16.4.5",
+    "edge-tts": "^1.6.1",
+    "gtts": "^2.0.2",
+    "langdetect": "^1.1.2",
+    "uuid": "^9.0.1",
+    "xregexp": "^5.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
