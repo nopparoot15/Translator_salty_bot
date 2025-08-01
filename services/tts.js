@@ -1,22 +1,16 @@
 const fs = require("fs");
 const path = require("path");
+const https = require("https");
 const { v4: uuidv4 } = require("uuid");
-const edgeTTS = require("edge-tts");
-const gTTS = require("gtts");
-const { createAudioPlayer, createAudioResource, entersState, joinVoiceChannel, VoiceConnectionStatus, getVoiceConnection } = require("@discordjs/voice");
-
-const EDGE_VOICE_MAP = {
-  th: "th-TH-PremwadeeNeural",
-  en: "en-US-JennyNeural",
-  ja: "ja-JP-NanamiNeural",
-  "zh-CN": "zh-CN-XiaoxiaoNeural",
-  ko: "ko-KR-SunHiNeural",
-  ru: "ru-RU-SvetlanaNeural",
-  id: "id-ID-GadisNeural",
-  tl: "fil-PH-BlessicaNeural",
-  hi: "hi-IN-SwaraNeural",
-  vi: "vi-VN-HoaiMyNeural"
-};
+const googleTTS = require("google-tts-api");
+const {
+  createAudioPlayer,
+  createAudioResource,
+  entersState,
+  joinVoiceChannel,
+  VoiceConnectionStatus,
+  getVoiceConnection
+} = require("@discordjs/voice");
 
 async function speakMultiLang(message, parts, client) {
   const guildId = message.guild.id;
@@ -35,29 +29,10 @@ async function speakMultiLang(message, parts, client) {
   while (queue.length > 0) {
     const { text, lang } = queue[0];
     const filename = path.join(__dirname, "..", "temp", `tts_${uuidv4()}.mp3`);
-    const voiceLang = lang === "zh" ? "zh-CN" : lang;
-    const ttsEngine = client.userTtsEngine.get(message.author.id) ||
-                      client.serverTtsEngine.get(message.guild.id) || "gtts";
+    const voiceLang = normalizeLang(lang);
 
     try {
-      if (ttsEngine === "edge") {
-        const voice = EDGE_VOICE_MAP[voiceLang] || "en-US-JennyNeural";
-        await edgeTTS
-          .convertStream({ text, voice, format: "audio-24khz-48kbitrate-mono-mp3" })
-          .then(result =>
-            new Promise((resolve, reject) => {
-              const stream = fs.createWriteStream(filename);
-              result.stream.pipe(stream);
-              stream.on("finish", resolve);
-              stream.on("error", reject);
-            })
-          );
-      } else {
-        const tts = new gTTS(text, voiceLang);
-        await new Promise((resolve, reject) => {
-          tts.save(filename, err => (err ? reject(err) : resolve()));
-        });
-      }
+      await downloadTTS(text, voiceLang, filename);
 
       const connection =
         getVoiceConnection(guildId) ||
@@ -68,6 +43,7 @@ async function speakMultiLang(message, parts, client) {
         });
 
       await entersState(connection, VoiceConnectionStatus.Ready, 10_000);
+
       const player = createAudioPlayer();
       const resource = createAudioResource(filename);
       connection.subscribe(player);
@@ -77,13 +53,39 @@ async function speakMultiLang(message, parts, client) {
         player.on("error", resolve);
         player.on("idle", resolve);
       });
-    } catch (e) {
-      console.error("❌ TTS error:", e);
+    } catch (err) {
+      console.error("❌ TTS Error:", err);
     } finally {
       if (fs.existsSync(filename)) fs.unlinkSync(filename);
       queue.shift();
     }
   }
+}
+
+function normalizeLang(lang) {
+  if (lang === "zh") return "zh-CN";
+  return ["th", "en", "ja", "zh-CN", "ko", "ru", "id", "tl", "hi", "vi"].includes(lang)
+    ? lang
+    : "en";
+}
+
+async function downloadTTS(text, lang = "th", filePath = "tts.mp3") {
+  const url = googleTTS.getAudioUrl(text, {
+    lang,
+    slow: false,
+    host: "https://translate.google.com"
+  });
+
+  const file = fs.createWriteStream(filePath);
+  return new Promise((resolve, reject) => {
+    https.get(url, res => {
+      res.pipe(file);
+      file.on("finish", () => {
+        file.close(resolve);
+      });
+      file.on("error", reject);
+    });
+  });
 }
 
 module.exports = { speakMultiLang };
