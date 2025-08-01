@@ -22,5 +22,35 @@ async function translateText(prompt, sourceLang = "", targetLang = "th") {
       payload,
       {
         headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Co
+          "Authorization": `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return response.data.choices?.[0]?.message?.content?.trim() || "❌ ไม่พบคำตอบจากโมเดล";
+  } catch (err) {
+    console.error("❌ Translation error:", err.response?.data || err.message);
+    return "❌ เกิดข้อผิดพลาดระหว่างการแปล";
+  }
+}
+
+// ชื่อภาษาสำหรับ prompt ภาษาไทย
+function getLangName(code) {
+  const map = {
+    en: "ภาษาอังกฤษ",
+    ja: "ภาษาญี่ปุ่น",
+    zh: "ภาษาจีน",
+    "zh-CN": "ภาษาจีน",
+    ko: "ภาษาเกาหลี",
+    th: "ภาษาไทย",
+    ru: "ภาษารัสเซีย",
+    id: "ภาษาอินโดนีเซีย",
+    tl: "ภาษาตากาล็อก",
+    hi: "ภาษาฮินดี",
+    vi: "ภาษาเวียดนาม"
+  };
+  return map[code] || `ภาษา ${code}`;
+}
+
+module.exports = { translateText };
