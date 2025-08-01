@@ -3,6 +3,9 @@ const { Client, GatewayIntentBits, Collection, Events, Partials } = require("dis
 const fs = require("fs");
 const path = require("path");
 
+// สำหรับกัน container ถูก kill บน Railway
+setInterval(() => {}, 1000 * 60 * 60); // 1 ชม.
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -19,25 +22,32 @@ client.ttsQueues = new Map();
 client.userTtsEngine = new Map();
 client.serverTtsEngine = new Map();
 
-// Load command files
+// โหลดคำสั่งจากโฟลเดอร์ commands
 const commandsPath = path.join(__dirname, "commands");
-const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
-for (const file of commandFiles) {
-  const filePath = path.join(commandsPath, file);
-  const command = require(filePath);
-  client.commands.set(command.name, command);
+if (fs.existsSync(commandsPath)) {
+  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith(".js"));
+  for (const file of commandFiles) {
+    const filePath = path.join(commandsPath, file);
+    const command = require(filePath);
+    client.commands.set(command.name, command);
+  }
 }
 
-// Event handlers
 client.once(Events.ClientReady, () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
-  require("./utils/autoDisconnect")(client); // ตรวจสอบ VC ว่าง
+
+  // เรียก autoDisconnect ถ้ามี
+  const autoDisconnectPath = path.join(__dirname, "utils", "autoDisconnect.js");
+  if (fs.existsSync(autoDisconnectPath)) {
+    const autoDisconnect = require(autoDisconnectPath);
+    if (typeof autoDisconnect === "function") autoDisconnect(client);
+  }
 });
 
 client.on(Events.MessageCreate, async message => {
   if (message.author.bot || !message.content.trim()) return;
 
-  // Run commands
+  // คำสั่งเริ่มต้นด้วย !
   if (message.content.startsWith(client.commandPrefix)) {
     const args = message.content.slice(client.commandPrefix.length).trim().split(/\s+/);
     const commandName = args.shift().toLowerCase();
@@ -53,7 +63,7 @@ client.on(Events.MessageCreate, async message => {
     return;
   }
 
-  // Custom message handling (OCR, auto translate, auto TTS)
+  // จัดการข้อความทั่วไป เช่น OCR, แปล, พูด
   require("./handlers/onMessage")(message, client);
 });
 
