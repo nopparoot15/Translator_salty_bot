@@ -15,10 +15,8 @@
     "uuid": "^9.0.1",
     "xregexp": "^5.1.1"
   },
-  "config": {
-    "omit": "dev"
-  },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "packageManager": "npm@9.8.1"
 }
